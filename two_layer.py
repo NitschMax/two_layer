@@ -75,8 +75,8 @@ class grid:
     ##### Plot the lattice and its variancies
     def plot(self):
         fig, ((ax1,ax2,ax3),(ax4,ax5,ax6))  = plt.subplots(2,3)
-        c2                  = ax1.pcolor(self.upp, cmap='RdBu', vmin=0)
-        c1                  = ax4.pcolor(self.down, cmap='RdBu', vmin=0)
+        c1                  = ax1.pcolor(self.upp, cmap='RdBu', vmin=0)
+        c2                  = ax4.pcolor(self.down, cmap='RdBu', vmin=0)
         ax2.plot(self.var, )
         ax2.legend(['down', 'upp'])
         ax3.hist(self.upp.flatten(), bins=20)
@@ -93,6 +93,8 @@ class grid:
         y       = x
         mesh1   = ax1.pcolormesh(x, y, self.upp, cmap='RdBu', vmin=0)
         mesh2   = ax2.pcolormesh(x, y, self.down, cmap='RdBu', vmin=0)
+       # fig.colorbar(mesh1, ax=ax1)
+       # fig.colorbar(mesh2, ax=ax2)
 
 
         def animate(i):
@@ -111,7 +113,7 @@ class grid:
             #temp.set_text(str(int(T[i])) + ' K')
             #temp.set_color(colors(i))
 
-        ani = FuncAnimation(fig=fig, func=animate, frames=n, interval=100, repeat=True)
+        ani = FuncAnimation(fig=fig, func=animate, frames=n, interval=200, repeat=True)
         directory   = "".join(self.data_directory() )
 
         if not os.path.exists(directory):
@@ -151,7 +153,7 @@ class grid:
 
     ##### Last version of the time_step algorithm, purely array indexing, by way the fastest version
     def time_step_ind(self):
-        candidates  = np.array(np.where(self.down > 1) )
+        candidates  = np.array(np.where(self.down*self.upp > 1) )
         if candidates.size == 0:
             return 0                                                    # Break the routine of there is no spilling possible
 
@@ -180,7 +182,7 @@ class grid:
 
     ##### time step with hexagon symmetry
     def time_step_hex(self):
-        candidates  = np.array(np.where(self.down > 1) )
+        candidates  = np.array(np.where(self.down*self.upp > 1) )
         if candidates.size == 0:
             return 0                                                    # Break the routine of there is no spilling possible
 
