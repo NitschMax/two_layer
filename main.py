@@ -6,8 +6,8 @@ def main():
     N       = 100
     n       = 500
     mu      = 1.00
-    geom    = "hex"
     geom    = "quad"
+    geom    = "hex"
 
     lattice = grid(mu, N, N, geom)
     lattice.greet()
@@ -18,8 +18,8 @@ def main():
     lattice.load()
     lattice.plot()
 
-#    lattice.fill_random()
-#    lattice.animation(n)
+    lattice.fill_random()
+    lattice.animation(n)
 
 #    for mu in np.arange(0.01, 2.001, .01):
 #        print(mu)

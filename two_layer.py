@@ -88,15 +88,23 @@ class grid:
 
     ##### Routine to build an animation out of the simulation of a grid
     def animation(self, n):
-        fig     = plt.figure(figsize=(6, 4))
-        ax      = fig.add_subplot(111)
+        fig, (ax1,ax2)     = plt.subplots(1, 2)
         x       = list(range(self.l+1 ) )
         y       = x
-        f_d     = ax.pcolormesh(x, y, self.down, cmap='RdBu', vmin=0)
+        mesh1   = ax1.pcolormesh(x, y, self.upp, cmap='RdBu', vmin=0)
+        mesh2   = ax2.pcolormesh(x, y, self.down, cmap='RdBu', vmin=0)
+
 
         def animate(i):
-            self.time_step_ind()
-            f_d.set_array(self.down.flatten() )
+            if self.geom == "quad":
+                self.time_step_ind()
+            elif self.geom == "hex":
+                self.time_step_hex()
+            else:
+                print("Something went running with the geometry of the lattice")
+
+            mesh1.set_array(self.upp.flatten() )
+            mesh2.set_array(self.down.flatten() )
 
             #### furhter possibilities which are not yet included
             #f_d.set_color(colors(i))
@@ -110,7 +118,7 @@ class grid:
             os.makedirs(directory)
 
         ani.save(directory + 'animation.mp4')
-        #plt.show()
+        plt.show()
 
     ##### A routine to check for a simple test of one time_step
     def test_run(self):
@@ -194,9 +202,6 @@ class grid:
         down_dist   = self.upp*percentage
         self.down   += down_dist
         self.upp    *= (1-percentage)
-
-        print(np.sum(self.upp) )
-        print(np.sum(self.down) )
 
         self.var.append([np.var(self.down), np.var(self.upp) ] )
         self.time   += 1
