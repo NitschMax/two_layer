@@ -5,9 +5,9 @@ import time
 def main():
     N       = 100
     n       = 500
-    mu      = 4.00
-    geom    = "quad"
+    mu      = 2.00
     geom    = "hex"
+    geom    = "quad"
 
     lattice = grid(mu, N, N, geom)
     lattice.greet()

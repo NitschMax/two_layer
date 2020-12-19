@@ -172,8 +172,7 @@ class grid:
         total_dist  = np.sum(fillings )/(len(steps)+1)
         total_upp   = self.a*self.mu+total_dist
         percentage  = total_dist/total_upp
-        down_dist   = self.upp*percentage
-        self.down   += down_dist
+        self.down   += self.upp*percentage
         self.upp    *= (1-percentage)
 
         self.var.append([np.var(self.down), np.var(self.upp) ] )
@@ -201,8 +200,7 @@ class grid:
         total_dist  = np.sum(fillings )/(len(steps)+1)
         total_upp   = self.a*self.mu+total_dist
         percentage  = total_dist/total_upp
-        down_dist   = self.upp*percentage
-        self.down   += down_dist
+        self.down   += self.upp*percentage
         self.upp    *= (1-percentage)
 
         self.var.append([np.var(self.down), np.var(self.upp) ] )
