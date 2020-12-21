@@ -77,8 +77,9 @@ class grid:
         fig, ((ax1,ax2,ax3),(ax4,ax5,ax6))  = plt.subplots(2,3)
         c1                  = ax1.pcolor(self.upp, cmap='RdBu', vmin=0)
         c2                  = ax4.pcolor(self.down, cmap='RdBu', vmin=0)
-        ax2.plot(self.var, )
-        ax2.legend(['down', 'upp'])
+        normed_var          = np.array(self.var)/self.mu**2
+        ax2.plot(normed_var[:,0], )
+        ax5.plot(normed_var[:,1], )
         ax3.hist(self.upp.flatten(), bins=20)
         ax6.hist(self.down.flatten(), bins=20)
         fig.colorbar(c1, ax=ax1)
@@ -149,6 +150,7 @@ class grid:
 
 
             if wert == 0:
+                print('Simulation stopped because of convergence after {} steps'.format(self.time) )
                 return
 
     ##### Last version of the time_step algorithm, purely array indexing, by way the fastest version
