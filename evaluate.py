@@ -2,19 +2,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 import data_dir
 import os
-from sandpile import grid
+from two_layer import grid
 
 def main():
     N           = 100
     mu          = .7
-    geom        = "quad"
     geom        = "hex"
+    geom        = "quad"
     lattice     = grid(mu, N, N, geom)
     directory   = lattice.data_directory()
     latt_dir    = directory[0] + directory[1]
     files       = os.listdir(latt_dir)
 
-    var         = np.array([[float(mu[2:]), np.mean(np.load(latt_dir + mu + "/variance.npy" )[-4:])] for mu in files] )
+    print(np.load(latt_dir + files[0] + "/variance.npy") )
+    var         = np.array([[float(mu[2:]), np.mean(np.load(latt_dir + mu + "/variance.npy" )[-1:,0])] for mu in files] )
     var         = var[var[:,0].argsort() ]
     print(var)
     mu          = var[1:, 0]

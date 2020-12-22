@@ -4,7 +4,7 @@ import time
 
 def main():
     N       = 100
-    n       = 500
+    n       = 2000
     mu      = 1.50
     geom    = "hex"
     geom    = "quad"
@@ -17,16 +17,16 @@ def main():
     lattice.save()
     lattice.load()
     lattice.plot()
-
-    #lattice.fill_random()
-    #lattice.animation(n)
-
-#    for mu in np.arange(0.01, 2.001, .01):
-#        print(mu)
-#        lattice = grid(mu, N, N, 'hex')
+#
+#    lattice.fill_random()
+#    lattice.animation(n)
+#
+#    for mu in np.arange(0.1, 4.001, .1):
+#        lattice = grid(mu, N, N, 'quad')
+#        lattice.greet()
 #        lattice.fill_random()
 #        lattice.run(n)
 #        lattice.save()
- 
+# 
 if __name__ == "__main__":
     main()
