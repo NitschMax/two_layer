@@ -11,17 +11,16 @@ def main():
     geom        = "quad"
     lattice     = grid(mu, N, N, geom)
     directory   = lattice.data_directory()
-    latt_dir    = directory[0] + directory[1]
+    latt_dir    = directory[0] + directory[1] + directory[2]
     files       = os.listdir(latt_dir)
 
-    print(np.load(latt_dir + files[0] + "/variance.npy") )
     var         = np.array([[float(mu[2:]), np.mean(np.load(latt_dir + mu + "/variance.npy" )[-1:,0])] for mu in files] )
     var         = var[var[:,0].argsort() ]
     print(var)
     mu          = var[1:, 0]
     variance    = var[1:, 1]
     normedVar   = variance/mu**2
-    var_dir     = "variances/" + directory[1]
+    var_dir     = "variances/" + directory[1] + directory[2]
     if not os.path.exists(var_dir):
         os.mkdir(var_dir)
 

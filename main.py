@@ -5,7 +5,7 @@ import time
 def main():
     N       = 100
     n       = 300
-    mu      = .50
+    mu      = .90
     geom    = "hex"
     geom    = "quad"
     cond    = 0

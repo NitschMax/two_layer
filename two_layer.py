@@ -45,7 +45,7 @@ class grid:
             os.mkdir(directory)
         os.chdir(directory)
 
-        return ['lattice_data/', self.geom + '_Nk1-{}_Nk2-{}/'.format(self.h,self.l), 'mu{:0.4f}/'.format(self.mu) ]
+        return ['lattice_data/', 'condition_' + str(self.cond) + '/', self.geom + '_Nk1-{}_Nk2-{}/'.format(self.h,self.l), 'mu{:0.4f}/'.format(self.mu) ]
 
     ##### Load an already calculated lattice with its lattest occupation and variancies
     def load(self):
