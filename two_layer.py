@@ -140,14 +140,7 @@ class grid:
     ##### A running routine, if the time_step algorithm returns 0, then the lattice has no possible spillings any more
     def run(self, N):
         for k in range(N):
-            if self.geom == "quad":
-                wert    = self.time_step_ind()
-            elif self.geom == "hex":
-                wert    = self.time_step_hex()
-            else:
-                print("Something went running with the geometry of the lattice")
-                break
-
+            wert    = self.time_step_ind()
 
             if wert == 0:
                 print('Simulation stopped because of convergence after {} steps'.format(self.time) )
@@ -155,13 +148,23 @@ class grid:
 
     ##### Last version of the time_step algorithm, purely array indexing, by way the fastest version
     def time_step_ind(self):
-        candidates  = np.array(np.where(self.down*self.upp > 1) )
+        if self.cond == 0:
+            candidates  = np.array(np.where(self.down+self.upp > 1) )
+        elif self.cond == 1:
+            candidates  = np.array(np.where(self.down*self.upp > 1) )
+        elif self.cond == 2:
+            candidates  = np.array(np.where(self.down > 1) )
+
         if candidates.size == 0:
             return 0                                                    # Break the routine of there is no spilling possible
 
         fillings    = self.down[candidates[0], candidates[1]]
         self.down[candidates[0], candidates[1]]  = 0
-        steps       = np.array([[-1, 0], [1, 0], [0, -1], [0, 1] ] )
+        if self.geom == 'quad':
+            steps       = np.array([[-1, 0], [1, 0], [0, -1], [0, 1] ] )
+        elif self.geom == 'hex':
+            steps       = np.array([[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, 1] ] )
+			
         candidates  = np.transpose(candidates)
         neighboors  = np.mod(candidates.reshape((candidates.shape[0], 1, candidates.shape[1]) ) + steps, self.l )
         neighboors  = np.transpose(neighboors, (1, 2, 0))
@@ -181,35 +184,7 @@ class grid:
         self.time   += 1
         return 1
 
-    ##### time step with hexagon symmetry
-    def time_step_hex(self):
-        candidates  = np.array(np.where(self.down*self.upp > 1) )
-        if candidates.size == 0:
-            return 0                                                    # Break the routine of there is no spilling possible
-
-        fillings    = self.down[candidates[0], candidates[1]]
-        self.down[candidates[0], candidates[1]]  = 0
-        steps       = np.array([[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, 1] ] )
-        candidates  = np.transpose(candidates)
-        neighboors  = np.mod(candidates.reshape((candidates.shape[0], 1, candidates.shape[1]) ) + steps, self.l )
-        neighboors  = np.transpose(neighboors, (1, 2, 0))
-        for el in neighboors:
-            self.down[el[0], el[1]]             += fillings/(len(steps)+1)             # This is necessary to get overspillings in the same cell right
-
-        candidates  = np.transpose(candidates)
-        self.upp[candidates[0], candidates[1]]  += fillings/(len(steps)+1)
-
-        total_dist  = np.sum(fillings )/(len(steps)+1)
-        total_upp   = self.a*self.mu+total_dist
-        percentage  = total_dist/total_upp
-        self.down   += self.upp*percentage
-        self.upp    *= (1-percentage)
-
-        self.var.append([np.var(self.down), np.var(self.upp) ] )
-        self.time   += 1
-        return 1
-
-    def __init__(self, mu, heigth, length, geom="quad"):
+    def __init__(self, mu, heigth, length, geom="quad", cond=0):
         self.h      = heigth                        #heigth of the grid
         self.l      = length                        #length of the grid
         self.a      = self.h*self.l                 #area of the grid
@@ -219,8 +194,15 @@ class grid:
         if geom in ["quad", "hex"]:
             self.geom   = geom                          #Geometry of the lattice
         else:
-            print('Choosen geometry does not exist. Quadratic geometric choosen as defaultl')
+            print('Choosen geometry does not exist. Quadratic geometric choosen as default')
             self.geom   = "quad"
+
+        if cond in [0, 1, 2]:
+    	    self.cond	= cond
+        else:
+            print('Choosen condition does not exist. Plus condition is choosen as default')
+    	    self.cond	= 0
+					
         self.upp    = np.zeros((self.h, self.l) )   #occupations, to get non-zero ocupations use the fill_* fuctions
         self.down   = np.zeros((self.h, self.l) )   #occupations, to get non-zero ocupations use the fill_* fuctions
 

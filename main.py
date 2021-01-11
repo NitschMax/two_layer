@@ -4,12 +4,14 @@ import time
 
 def main():
     N       = 100
-    n       = 2000
-    mu      = 1.50
+    n       = 300
+    mu      = .50
     geom    = "hex"
     geom    = "quad"
+    cond    = 0
+	
 
-    lattice = grid(mu, N, N, geom)
+    lattice = grid(mu, N, N, geom, cond)
     lattice.greet()
 
     lattice.fill_random()
@@ -22,7 +24,7 @@ def main():
 #    lattice.animation(n)
 #
 #    for mu in np.arange(0.1, 4.001, .1):
-#        lattice = grid(mu, N, N, 'quad')
+#        lattice = grid(mu, N, N, 'quad', 0)
 #        lattice.greet()
 #        lattice.fill_random()
 #        lattice.run(n)
