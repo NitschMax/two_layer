@@ -54,9 +54,11 @@ class grid:
         if not os.path.exists(directory):
             print("There is no data available for this lattice configuration.")
         else:
-            name        = "occupation.npy"
-            self.down      = np.load(directory + name)
-            name        = "variance.npy"
+            name        = "occupation_down_1.npy"
+            self.down   = np.load(directory + name)
+            name        = "occupation_upp_1.npy"
+            self.upp    = np.load(directory + name)
+            name        = "variance_1.npy"
             self.var    = list(np.load(directory + name) )
             self.time   = len(self.var )
 
@@ -66,10 +68,13 @@ class grid:
 
         if not os.path.exists(directory):
             os.makedirs(directory)
+        number      = int(len(os.listdir(directory) ) )/3 + 1
         
-        name        = "occupation.npy"
+        name        = "occupation_down_" + str(number) + ".npy"
         np.save(directory + name, self.down)
-        name        = "variance.npy"
+        name        = "occupation_upp_" + str(number) + ".npy"
+        np.save(directory + name, self.upp)
+        name        = "variance_" + str(number) + ".npy"
         np.save(directory + name, self.var)
     
     ##### Plot the lattice and its variancies
@@ -92,10 +97,10 @@ class grid:
         fig, (ax1,ax2)     = plt.subplots(1, 2)
         x       = list(range(self.l+1 ) )
         y       = x
-        mesh1   = ax1.pcolormesh(x, y, self.upp, cmap='RdBu', vmin=0)
+        mesh1   = ax1.pcolormesh(x, y, self.upp, cmap='RdBu', vmin=self.mu-.2, vmax=self.mu+.2)
         mesh2   = ax2.pcolormesh(x, y, self.down, cmap='RdBu', vmin=0)
-       # fig.colorbar(mesh1, ax=ax1)
-       # fig.colorbar(mesh2, ax=ax2)
+        fig.colorbar(mesh1, ax=ax1)
+        fig.colorbar(mesh2, ax=ax2)
 
 
         def animate(i):
@@ -120,8 +125,8 @@ class grid:
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        ani.save(directory + 'animation.mp4')
         plt.show()
+        #ani.save(directory + 'animation.mp4')
 
     ##### A routine to check for a simple test of one time_step
     def test_run(self):
