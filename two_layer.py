@@ -151,8 +151,32 @@ class grid:
                 print('Simulation stopped because of convergence after {} steps'.format(self.time) )
                 return
 
-    ##### Last version of the time_step algorithm, purely array indexing, by way the fastest version
-    def time_step_ind(self):
+    def periodicity(self, n, k):
+        result  = []
+        for i in range(10):
+            print(i)
+            self.fill_random()
+            self.run(n)
+            initial_pattern = self.topple()
+            for h in range(1, k+1):
+                self.time_step_ind()
+                candidates  = self.topple()
+                if np.array_equal(initial_pattern, candidates):
+                    result.append([self.mu, h] )
+                    break
+                if h == k:
+                    result.append([self.mu, h])
+
+        directory   = self.data_directory()
+        directory   = "periodicities/" + directory[1] + directory[2]
+
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        
+        name        = "periodicities_mu-{:1.4f}.txt".format(self.mu)
+        np.savetxt(directory + name, result )
+            
+    def topple(self):
         if self.cond == 0:
             candidates  = np.array(np.where(self.down+self.upp > 1) )
         elif self.cond == 1:
@@ -160,6 +184,11 @@ class grid:
         elif self.cond == 2:
             candidates  = np.array(np.where(self.down > 1) )
 
+        return candidates
+
+    ##### Last version of the time_step algorithm, purely array indexing, by way the fastest version
+    def time_step_ind(self):
+        candidates  = self.topple()
         if candidates.size == 0:
             return 0                                                    # Break the routine of there is no spilling possible
 
