@@ -5,14 +5,16 @@ import time
 def main():
     N       = 100
     n       = 10000
-    mu      = 0.50
+    mu      = 0.43
     geom    = "hex"
     geom    = "quad"
     cond    = 0
 	
 
     lattice = grid(mu, N, N, geom, cond) 
-    for mu in np.arange(0.46, 0.8501, .01):
+#    lattice.periodicity(n, 1000)
+
+    for mu in np.arange(0.50, 0.6501, .01):
         lattice = grid(mu, N, N, geom, cond)
         lattice.greet()
         lattice.periodicity(n, 1000)

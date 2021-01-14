@@ -165,7 +165,7 @@ class grid:
                     result.append([self.mu, h] )
                     break
                 if h == k:
-                    result.append([self.mu, h])
+                    result.append([self.mu, False])
 
         directory   = self.data_directory()
         directory   = "periodicities/" + directory[1] + directory[2]
@@ -173,8 +173,8 @@ class grid:
         if not os.path.exists(directory):
             os.makedirs(directory)
         
-        name        = "periodicities_mu-{:1.4f}.txt".format(self.mu)
-        np.savetxt(directory + name, result )
+        name        = "periodicities_mu-{:1.4f}".format(self.mu)
+        np.save(directory + name, result )
             
     def topple(self):
         if self.cond == 0:
