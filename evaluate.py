@@ -20,10 +20,13 @@ def main():
 
 
 def period_eval(lattice, ax1, ax2):
+    old_dir     = os.getcwd()
     directory   = lattice.data_directory()
     dir         = 'periodicities/' + directory[1] + directory[2]
     files       = os.listdir(dir)
-    period      = np.array([np.load(dir + file) for file in files]).reshape(-1, 2)
+    os.chdir(dir)
+    files       = filter(os.path.isfile, files)
+    period      = np.array([np.load(file) for file in files]).reshape(-1, 2)
     period      = period[period[:,0].argsort() ]
     mu          = period[:,0]
     period      = period[:,1]
@@ -32,7 +35,6 @@ def period_eval(lattice, ax1, ax2):
     non_per     = np.where(period == False )[0]
 
     bins        = np.arange(mu[non_per[0] ]-.005, mu[non_per[-1] ]+.005, .01)
-    print(bins)
     ax2.hist(mu[non_per], bins=bins, color='gray' )
     ax1.scatter(mu[per], period[per], marker='x')
     
@@ -40,7 +42,8 @@ def period_eval(lattice, ax1, ax2):
     ax1.set_xlabel('Average filling mu')
     ax1.set_ylabel('Periodicity with max 1000')
     ax1.grid(True)
-    #plt.savefig(dir + 'periodicities.pdf')
+    plt.savefig('plots/periodicities.pdf')
+    os.chdir(old_dir)
 
 
 def var_eval(lattice, ax):
