@@ -5,7 +5,7 @@ import time
 def main():
     N       = 100
     n       = 10000
-    mu      = 0.43
+    mu      = 0.44
     geom    = "hex"
     geom    = "quad"
     cond    = 0
@@ -14,10 +14,10 @@ def main():
     lattice = grid(mu, N, N, geom, cond) 
 #    lattice.periodicity(n, 1000)
 
-    for mu in np.arange(0.50, 0.6501, .01):
-        lattice = grid(mu, N, N, geom, cond)
-        lattice.greet()
-        lattice.periodicity(n, 1000)
+#    for mu in np.arange(0.25, 0.7501, .01):
+#        lattice = grid(mu, N, N, geom, cond)
+#        lattice.greet()
+#        lattice.periodicity(n, 1000)
 
 #    lattice.fill_random()
 #    lattice.run(n)
@@ -28,17 +28,17 @@ def main():
 #    lattice.fill_random()
 #    lattice.animation(n)
  
-#    for mu in np.arange(0.5, 4.001, .1):
-#        lattice = grid(mu, N, N, geom, cond)
-#        lattice.greet()
-#        for i in range(10):
-#            print(i)
-#            lattice.fill_random()
-#            lattice.run(n)
-#            lattice.save()
-# 
-#
-#
+    for mu in np.arange(0.25, 0.7501, .01):
+        lattice = grid(mu, N, N, geom, cond)
+        lattice.greet()
+        for i in range(10):
+            print(i)
+            lattice.fill_random()
+            lattice.run(n)
+            lattice.save()
+ 
+
+
 
 if __name__ == "__main__":
     main()

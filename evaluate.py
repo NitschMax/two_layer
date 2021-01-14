@@ -14,8 +14,8 @@ def main():
     fig, ax1    = plt.subplots()
     ax2         = ax1.twinx()
 
-    period_eval(lattice, ax1, ax2)
-    #var_eval(lattice, ax2)
+    #period_eval(lattice, ax1, ax2)
+    var_eval(lattice, ax1)
     plt.show()
 
 
@@ -75,11 +75,11 @@ def var_eval(lattice, ax):
     
     ax.scatter(mu, var_upp_n, marker='.', label='upper layer' )
     ax.scatter(mu, var_down_n, marker='.', label='lower layer')
-    plt.grid(True)
-    plt.xlabel("mu")
-    plt.ylabel("normed variance")
+    ax.grid(True)
+    ax.set_xlabel("mu")
+    ax.set_ylabel("normed variance")
     np.savetxt(var_dir + lattice.geom + '_variance_phases.txt', np.transpose([mu, var_down_n, var_upp_n] ) )
-    plt.legend()
+    ax.legend()
 
     plt.savefig(var_dir + lattice.geom + '_variance_phases.pdf')
     

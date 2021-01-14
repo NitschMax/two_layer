@@ -70,11 +70,11 @@ class grid:
             os.makedirs(directory)
         number      = int(len(os.listdir(directory) ) )/3 + 1
         
-        name        = "occupation_down_" + str(number) + ".npy"
+        name        = "occupation_down_{:1.0f}.npy".format(number)
         np.save(directory + name, self.down)
-        name        = "occupation_upp_" + str(number) + ".npy"
+        name        = "occupation_upp_{:1.0f}.npy".format(number)
         np.save(directory + name, self.upp)
-        name        = "variance_" + str(number) + ".npy"
+        name        = "variance_{:1.0f}.npy".format(number)
         np.save(directory + name, self.var)
     
     ##### Plot the lattice and its variancies
@@ -232,10 +232,10 @@ class grid:
             self.geom   = "quad"
 
         if cond in [0, 1, 2]:
-    	    self.cond	= cond
+    	    self.cond   = cond
         else:
             print('Choosen condition does not exist. Plus condition is choosen as default')
-    	    self.cond	= 0
+            self.cond   = 0
 					
         self.upp    = np.zeros((self.h, self.l) )   #occupations, to get non-zero ocupations use the fill_* fuctions
         self.down   = np.zeros((self.h, self.l) )   #occupations, to get non-zero ocupations use the fill_* fuctions
