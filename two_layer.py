@@ -80,7 +80,7 @@ class grid:
     ##### Plot the lattice and its variancies
     def plot(self):
         fig, ((ax1,ax2,ax3),(ax4,ax5,ax6))  = plt.subplots(2,3)
-        c1                  = ax1.pcolor(self.upp, cmap='RdBu', vmin=0)
+        c1                  = ax1.pcolor(self.upp, cmap='RdBu')
         c2                  = ax4.pcolor(self.down, cmap='RdBu', vmin=0)
         normed_var          = np.array(self.var)/self.mu**2
         ax2.plot(normed_var[:,0], )
@@ -208,7 +208,7 @@ class grid:
         candidates  = np.transpose(candidates)
         self.upp[candidates[0], candidates[1]]  += fillings/(len(steps)+1)
 
-        total_dist  = np.sum(fillings )/(len(steps)+1)
+        total_dist  = np.sum(fillngs )/(len(steps)+1)
         total_upp   = self.a*self.mu+total_dist
         percentage  = total_dist/total_upp
         self.down   += self.upp*percentage

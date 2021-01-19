@@ -14,8 +14,8 @@ def main():
     fig, ax1    = plt.subplots()
     ax2         = ax1.twinx()
 
-    #period_eval(lattice, ax1, ax2)
-    var_eval(lattice, ax1)
+    period_eval(lattice, ax1, ax2)
+    #var_eval(lattice, ax1)
     plt.show()
 
 
@@ -40,7 +40,8 @@ def period_eval(lattice, ax1, ax2):
     
     ax1.set_yscale('log')
     ax1.set_xlabel('Average filling mu')
-    ax1.set_ylabel('Periodicity with max 1000')
+    ax1.set_ylabel('Periodicity')
+    ax2.set_ylabel('Number of configurations without periodicity')
     ax1.grid(True)
     plt.savefig('plots/periodicities.pdf')
     os.chdir(old_dir)
