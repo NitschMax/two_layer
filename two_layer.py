@@ -202,29 +202,34 @@ class grid:
         candidates  = np.transpose(candidates)
         neighboors  = np.mod(candidates.reshape((candidates.shape[0], 1, candidates.shape[1]) ) + steps, self.l )
         neighboors  = np.transpose(neighboors, (1, 2, 0))
+        num_neigh   = len(steps)+1
         for el in neighboors:
-            self.down[el[0], el[1]]             += fillings/(len(steps)+1)             # This is necessary to get overspillings in the same cell right
+            self.down[el[0], el[1]]             += self.alpha*fillings/num_neigh             # This is necessary to get overspillings in the same cell right
 
         candidates  = np.transpose(candidates)
-        self.upp[candidates[0], candidates[1]]  += fillings/(len(steps)+1)
+        self.upp[candidates[0], candidates[1]]  += self.beta*fillings/num_neigh
 
-        total_dist  = np.sum(fillngs )/(len(steps)+1)
-        total_upp   = self.a*self.mu+total_dist
-        percentage  = total_dist/total_upp
-        self.down   += self.upp*percentage
-        self.upp    *= (1-percentage)
+        total_exc   = (self.beta+4*self.alpha-(k+1) )/(k+1)*np.sum(fillngs )
+        total_both  = 2*self.a*self.mu
+
+        percentage  = total_exc/total_upp
+        self.down   /= (1+percentage)
+        self.upp    /= (1+percentage)
 
         self.var.append([np.var(self.down), np.var(self.upp) ] )
         self.time   += 1
         return 1
 
-    def __init__(self, mu, heigth, length, geom="quad", cond=0):
+    def __init__(self, mu, heigth, length, alpha, beta, geom="quad", cond=0):
         self.h      = heigth                        #heigth of the grid
         self.l      = length                        #length of the grid
         self.a      = self.h*self.l                 #area of the grid
         self.mu     = mu                            #average filling of the grid
         self.time   = 0                             #current time step of the grid
         self.var    = []                            #variance of the grid
+        self.alpha  = alpha                         #toppling excession in horizontal direction
+        self.beta   = beta                          #toppling excession in vertical direction
+
         if geom in ["quad", "hex"]:
             self.geom   = geom                          #Geometry of the lattice
         else:
@@ -241,14 +246,6 @@ class grid:
         self.down   = np.zeros((self.h, self.l) )   #occupations, to get non-zero ocupations use the fill_* fuctions
 
     
-
-
-
-
-
-
-
-
 
 
 

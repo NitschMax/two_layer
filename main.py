@@ -9,9 +9,11 @@ def main():
     geom    = "hex"
     geom    = "quad"
     cond    = 0
+    alpha   = 1
+    beta    = alpha
 	
 
-    lattice = grid(mu, N, N, geom, cond) 
+    lattice = grid(mu, N, N, alpha, beta, geom, cond) 
 #    lattice.periodicity(n, 1000)
 
 #    for mu in np.arange(0.25, 0.7501, .01):
@@ -22,18 +24,12 @@ def main():
     lattice.fill_random()
     lattice.run(n)
     lattice.plot()
-    lattice.time_step_ind()
-    lattice.plot()
-    lattice.time_step_ind()
-    lattice.plot()
-    lattice.time_step_ind()
-    lattice.plot()
 
-    lattice.fill_random()
-    lattice.animation(n)
+#    lattice.fill_random()
+#   lattice.animation(n)
  
 #    for mu in np.arange(0.25, 0.7501, .01):
-#        lattice = grid(mu, N, N, geom, cond)
+#        lattice = grid(mu, N, N, alpha, beta, geom, cond) 
 #        lattice.greet()
 #        for i in range(10):
 #            print(i)
