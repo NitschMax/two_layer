@@ -6,16 +6,24 @@ import numpy as np
 
 def main():
     N           = 100
-    mu          = .7
     geom        = "hex"
     geom        = "quad"
     cond        = 0
-    lattice     = grid(mu, N, N, geom, cond)
+    mu          = 1.0
+    alpha       = 1.7
+    beta        = alpha
+
+    lattice     = grid(mu, N, N, alpha, beta, geom, cond)
     fig, ax1    = plt.subplots()
     ax2         = ax1.twinx()
 
-    period_eval(lattice, ax1, ax2)
-    #var_eval(lattice, ax1)
+    mu_var      = np.arange(0.3, 1.5, 0.01)
+    alpha_var   = alpha*np.ones(mu_var.size )
+    beta_var    = beta*np.ones(mu_var.size )
+    variables   = np.transpose([mu_var, alpha_var, beta_var])
+
+    #period_eval(lattice, ax1, ax2)
+    var_eval(lattice, ax1, variables)
     plt.show()
 
 
@@ -46,29 +54,37 @@ def period_eval(lattice, ax1, ax2):
     plt.savefig('plots/periodicities.pdf')
     os.chdir(old_dir)
 
+def var_in(word):
+    return 'var' in word
 
-def var_eval(lattice, ax):
+def var_eval(lattice, ax, variables):
     directory   = lattice.data_directory()
     latt_dir    = directory[0] + directory[1] + directory[2]
-    files       = os.listdir(latt_dir)
     var         = []
 
-    for mu_direct in files:
-        mu      = float(mu_direct[2:] )
-        data    = np.array([np.load(latt_dir + mu_direct + "/variance_" + str(i) + ".npy" )[-1] for i in range(1,11)] )
-        data    = np.array([np.concatenate( ([mu], np.load(latt_dir + mu_direct + "/variance_" + str(i) + ".npy" )[-1] )) for i in range(1,11)] )
+    for set_of_var in variables:
+        lattice.mu     = set_of_var[0]
+        lattice.alpha  = set_of_var[1]
+        lattice.beta   = set_of_var[2]
+
+        mu_direct   = lattice.data_clarification()
+        if not os.path.isdir(latt_dir + mu_direct):
+            continue
+
+        files   = os.listdir(latt_dir + mu_direct )
+        files   = list(filter(var_in, files) )
+
+        data    = np.array([ np.concatenate( (set_of_var, np.load(latt_dir + mu_direct + "/" + datei)[-1]) ) for datei in [files[0]] ] )
         var.append(data)
 
     var         = np.array(var)
-    var         = var.reshape(-1,3)
+    var         = var.reshape(-1,5)
     var         = var[var[:,0].argsort() ]
-    print(var.shape )
-    print(var)
     mu          = var[:, 0]
-    var_down    = var[:, 1]
-    var_down_n  = var_down/mu**2
-    var_upp     = var[:, 2]
-    var_upp_n   = var_upp/mu**2
+    var_down    = var[:, 3]
+    var_down_n  = np.sqrt(var_down)/mu
+    var_upp     = var[:, 4]
+    var_upp_n   = np.sqrt(var_upp)/mu
 
     var_dir     = "variances/" + directory[1] + directory[2]
     if not os.path.exists(var_dir):
@@ -78,7 +94,7 @@ def var_eval(lattice, ax):
     ax.scatter(mu, var_down_n, marker='.', label='lower layer')
     ax.grid(True)
     ax.set_xlabel("mu")
-    ax.set_ylabel("normed variance")
+    ax.set_ylabel("normed standard deviation")
     np.savetxt(var_dir + lattice.geom + '_variance_phases.txt', np.transpose([mu, var_down_n, var_upp_n] ) )
     ax.legend()
 

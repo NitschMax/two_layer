@@ -9,7 +9,8 @@ from matplotlib.animation import FuncAnimation
 class grid:
     ##### Let the lattice introduce itself
     def greet(self):
-        print("Hello World, I am a grid of heigth {} and length {}! My average filling is {:1.4f} and I have a {} geometry.".format(self.h, self.l, self.mu, self.geom)  )
+        print("Hello World, I am a grid of heigth {} and length {}! My average filling is {:1.4f} and I have a {} geometry. Alpha is {:1.3f} and beta {:1.3f}" \
+                .format(self.h, self.l, self.mu, self.geom, self.alpha, self.beta) )
 
     ##### Several interesting starting configurations
     def fill_random(self):
@@ -45,7 +46,10 @@ class grid:
             os.mkdir(directory)
         os.chdir(directory)
 
-        return ['lattice_data/', 'condition_' + str(self.cond) + '/', self.geom + '_Nk1-{}_Nk2-{}/'.format(self.h,self.l), 'mu{:0.4f}/'.format(self.mu) ]
+        return ['lattice_data/', 'condition_' + str(self.cond) + '/', self.geom + '_Nk1-{}_Nk2-{}/'.format(self.h,self.l), self.data_clarification() ]
+
+    def data_clarification(self):
+        return 'mu-{:0.4f}_alpha-{:1.3f}_beta-{:1.3f}/'.format(self.mu,self.alpha,self.beta )
 
     ##### Load an already calculated lattice with its lattest occupation and variancies
     def load(self):
@@ -53,6 +57,7 @@ class grid:
 
         if not os.path.exists(directory):
             print("There is no data available for this lattice configuration.")
+            return False
         else:
             name        = "occupation_down_1.npy"
             self.down   = np.load(directory + name)
@@ -61,6 +66,7 @@ class grid:
             name        = "variance_1.npy"
             self.var    = list(np.load(directory + name) )
             self.time   = len(self.var )
+            return True
 
     ##### Save the lattice and its variancies
     def save(self):
@@ -81,10 +87,10 @@ class grid:
     def plot(self):
         fig, ((ax1,ax2,ax3),(ax4,ax5,ax6))  = plt.subplots(2,3)
         c1                  = ax1.pcolor(self.upp, cmap='RdBu')
-        c2                  = ax4.pcolor(self.down, cmap='RdBu', vmin=0)
+        c2                  = ax4.pcolor(self.down, cmap='RdBu')
         normed_var          = np.array(self.var)/self.mu**2
-        ax2.plot(normed_var[:,0], )
-        ax5.plot(normed_var[:,1], )
+        ax2.plot(normed_var[:,1], )
+        ax5.plot(normed_var[:,0], )
         ax3.hist(self.upp.flatten(), bins=20)
         ax6.hist(self.down.flatten(), bins=20)
         fig.colorbar(c1, ax=ax1)
@@ -119,7 +125,7 @@ class grid:
             #temp.set_text(str(int(T[i])) + ' K')
             #temp.set_color(colors(i))
 
-        ani = FuncAnimation(fig=fig, func=animate, frames=n, interval=200, repeat=True)
+        ani = FuncAnimation(fig=fig, func=animate, frames=n, interval=20, repeat=True)
         directory   = "".join(self.data_directory() )
 
         if not os.path.exists(directory):
@@ -209,11 +215,13 @@ class grid:
         candidates  = np.transpose(candidates)
         self.upp[candidates[0], candidates[1]]  += self.beta*fillings/num_neigh
 
-        total_exc   = (self.beta+4*self.alpha-(k+1) )/(k+1)*np.sum(fillngs )
-        total_both  = 2*self.a*self.mu
-
-        percentage  = total_exc/total_upp
+        total_both  = self.a*self.mu
+        total_exc   = np.sum(self.down)-total_both
+        percentage  = total_exc/total_both
         self.down   /= (1+percentage)
+
+        total_exc   = np.sum(self.upp)-total_both
+        percentage  = total_exc/total_both
         self.upp    /= (1+percentage)
 
         self.var.append([np.var(self.down), np.var(self.upp) ] )
