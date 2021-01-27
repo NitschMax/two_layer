@@ -28,7 +28,7 @@ def main():
 
     lattice.fill_random()
     lattice.run(n)
-    lattice.animation(n, show_ani=True, save_ani=False)
+    lattice.animation(500, show_ani=True, save_ani=True)
 
 #    lattice.fill_random()
 #    lattice.run(n)

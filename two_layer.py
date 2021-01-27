@@ -156,16 +156,20 @@ class grid:
             #temp.set_color(colors(i))
 
         ani = FuncAnimation(fig=fig, func=animate, frames=n, interval=40, repeat=True)
-        directory       = self.data_directory()
-        directory[0]    = 'animations/'
-        directory       = "".join(directory )
-
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
         if save_ani:
+            directory       = self.data_directory()
+            spec_name       = directory[-1]
+            spec_name       = spec_name[:-1]
+            print(spec_name)
+            directory[0]    = 'animations/'
+            directory       = "".join(directory )
+
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+
             print('Save animation in', directory)
-            ani.save(directory + 'animation.mp4', writer='ffmpeg')
+            ani.save(directory + spec_name + '_animation.mp4', writer='ffmpeg')
+
         if show_ani:
             plt.show()
 
