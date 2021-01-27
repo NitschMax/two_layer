@@ -74,7 +74,9 @@ class grid:
 
         if not os.path.exists(directory):
             os.makedirs(directory)
-        number      = int(len(os.listdir(directory) ) )/3 + 1
+        files       = os.listdir(directory)
+        files       = list(filter(var_in, files) )
+        number      = int(len(files ) ) + 1
         
         name        = "occupation_down_{:1.0f}.npy".format(number)
         np.save(directory + name, self.down)
@@ -82,13 +84,27 @@ class grid:
         np.save(directory + name, self.upp)
         name        = "variance_{:1.0f}.npy".format(number)
         np.save(directory + name, self.var)
-    
+
     ##### Plot the lattice and its variancies
-    def plot(self):
+    def plot(self, save_plot=False):
         fig, ((ax1,ax2,ax3),(ax4,ax5,ax6))  = plt.subplots(2,3)
         c1                  = ax1.pcolor(self.upp, cmap='RdBu')
-        c2                  = ax4.pcolor(self.down, cmap='RdBu')
+        c2                  = ax4.pcolor(self.down, cmap='RdBu', vmax=2.5*self.mu)
         normed_var          = np.array(self.var)/self.mu**2
+        ax2.set_title('upper layer')
+        ax2.set_xlabel('timestep')
+        ax2.set_ylabel('standard deviation')
+
+        ax5.set_title('lower layer')
+        ax5.set_xlabel('timestep')
+        ax5.set_ylabel('standard deviation')
+
+        ax3.set_xlabel('moisture')
+        ax3.set_ylabel('number of cells')
+
+        ax6.set_xlabel('moisture')
+        ax6.set_ylabel('number of cells')
+
         ax2.plot(normed_var[:,1], )
         ax5.plot(normed_var[:,0], )
         ax3.hist(self.upp.flatten(), bins=20)
@@ -96,15 +112,29 @@ class grid:
         fig.colorbar(c1, ax=ax1)
         fig.colorbar(c2, ax=ax4)
         fig.tight_layout()
+
+        if save_plot:
+            sub_dirs        = self.data_directory()
+            directory       = "".join(sub_dirs )
+            name            = sub_dirs[-1]
+            name            = name[:-1] + '.pdf'
+            print(name)
+
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            plt.savefig(directory + name)
+
         plt.show()
 
     ##### Routine to build an animation out of the simulation of a grid
-    def animation(self, n):
-        fig, (ax1,ax2)     = plt.subplots(1, 2)
+    def animation(self, n, show_ani=True, save_ani=False):
+        fig, (ax1,ax2)     = plt.subplots(1, 2, figsize=[12.8, 9.6])
         x       = list(range(self.l+1 ) )
         y       = x
-        mesh1   = ax1.pcolormesh(x, y, self.upp, cmap='RdBu', vmin=self.mu-.2, vmax=self.mu+.2)
+        mesh1   = ax1.pcolormesh(x, y, self.upp, cmap='RdBu', vmin=0)
         mesh2   = ax2.pcolormesh(x, y, self.down, cmap='RdBu', vmin=0)
+        ax1.set_title('upper layer')
+        ax2.set_title('lower layer')
         fig.colorbar(mesh1, ax=ax1)
         fig.colorbar(mesh2, ax=ax2)
 
@@ -125,14 +155,19 @@ class grid:
             #temp.set_text(str(int(T[i])) + ' K')
             #temp.set_color(colors(i))
 
-        ani = FuncAnimation(fig=fig, func=animate, frames=n, interval=20, repeat=True)
-        directory   = "".join(self.data_directory() )
+        ani = FuncAnimation(fig=fig, func=animate, frames=n, interval=40, repeat=True)
+        directory       = self.data_directory()
+        directory[0]    = 'animations/'
+        directory       = "".join(directory )
 
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        plt.show()
-        #ani.save(directory + 'animation.mp4')
+        if save_ani:
+            print('Save animation in', directory)
+            ani.save(directory + 'animation.mp4', writer='ffmpeg')
+        if show_ani:
+            plt.show()
 
     ##### A routine to check for a simple test of one time_step
     def test_run(self):
@@ -254,6 +289,8 @@ class grid:
         self.down   = np.zeros((self.h, self.l) )   #occupations, to get non-zero ocupations use the fill_* fuctions
 
     
+def var_in(word):
+    return 'var' in word
 
 
 

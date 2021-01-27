@@ -10,7 +10,7 @@ def main():
     geom        = "quad"
     cond        = 0
     mu          = 1.0
-    alpha       = 1.7
+    alpha       = 1.2
     beta        = alpha
 
     lattice     = grid(mu, N, N, alpha, beta, geom, cond)
