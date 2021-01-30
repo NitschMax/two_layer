@@ -7,8 +7,8 @@ from joblib import Parallel, delayed
 def main():
     N       = 100
     n       = 10000
-    geom    = "quad"
     geom    = "hex"
+    geom    = "quad"
     cond    = 2
     mu      = 1.50
     alpha   = 1.200
