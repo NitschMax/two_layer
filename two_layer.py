@@ -9,7 +9,7 @@ from matplotlib.animation import FuncAnimation
 class grid:
     ##### Let the lattice introduce itself
     def greet(self):
-        print("Hello World, I am a grid of heigth {} and length {}! My average filling is {:1.4f} and I have a {} geometry. Alpha is {:1.3f} and beta {:1.3f}" \
+        print("Hello World, I am a grid of heigth {} and length {}! My average filling is {:1.4f} and I have a {} geometry. Alpha is {:1.3f} and beta {:1.3f}." \
                 .format(self.h, self.l, self.mu, self.geom, self.alpha, self.beta) )
 
     ##### Several interesting starting configurations
@@ -140,12 +140,7 @@ class grid:
 
 
         def animate(i):
-            if self.geom == "quad":
-                self.time_step_ind()
-            elif self.geom == "hex":
-                self.time_step_hex()
-            else:
-                print("Something went running with the geometry of the lattice")
+            self.time_step_ind()
 
             mesh1.set_array(self.upp.flatten() )
             mesh2.set_array(self.down.flatten() )

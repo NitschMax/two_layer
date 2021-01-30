@@ -7,11 +7,11 @@ from joblib import Parallel, delayed
 def main():
     N       = 100
     n       = 10000
-    geom    = "hex"
     geom    = "quad"
-    cond    = 0
-    mu      = 0.32
-    alpha   = 1.245
+    geom    = "hex"
+    cond    = 2
+    mu      = 1.50
+    alpha   = 1.200
     beta    = alpha
 	
 
@@ -27,8 +27,7 @@ def main():
 #    lattice.plot(save_plot=True)
 
     lattice.fill_random()
-    lattice.run(n)
-    lattice.animation(500, show_ani=True, save_ani=True)
+    lattice.animation(500, show_ani=True, save_ani=False)
 
 #    lattice.fill_random()
 #    lattice.run(n)
