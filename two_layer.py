@@ -249,14 +249,18 @@ class grid:
         candidates  = np.transpose(candidates)
         self.upp[candidates[0], candidates[1]]  += self.beta*fillings/num_neigh
 
-        total_both  = self.a*self.mu
-        total_exc   = np.sum(self.down)-total_both
-        percentage  = total_exc/total_both
-        self.down   /= (1+percentage)
+        total_one   = self.a*self.mu
 
-        total_exc   = np.sum(self.upp)-total_both
-        percentage  = total_exc/total_both
-        self.upp    /= (1+percentage)
+        total_upp   = np.sum(self.upp)
+        exc_upp     = total_upp-total_one
+        percentage  = exc_upp/total_upp
+        self.down   += percentage*self.upp
+        self.upp    -= percentage*self.upp
+
+        total_down  = np.sum(self.down)
+        total_exc   = total_down-total_one
+        percentage  = total_exc/total_down
+        self.down   -= percentage*self.down
 
         self.var.append([np.var(self.down), np.var(self.upp) ] )
         self.time   += 1
