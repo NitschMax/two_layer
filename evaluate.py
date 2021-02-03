@@ -6,18 +6,18 @@ import numpy as np
 
 def main():
     N           = 100
-    geom        = "hex"
     geom        = "quad"
-    cond        = 0
+    geom        = "hex"
+    cond        = 2
     mu          = 1.0
-    alpha       = 1.2
+    alpha       = 1.01
     beta        = alpha
 
     lattice     = grid(mu, N, N, alpha, beta, geom, cond)
     fig, ax1    = plt.subplots()
     ax2         = ax1.twinx()
 
-    mu_var      = np.arange(0.3, 1.5, 0.01)
+    mu_var      = np.arange(0.5, 4.0, 0.10)
     alpha_var   = alpha*np.ones(mu_var.size )
     beta_var    = beta*np.ones(mu_var.size )
     variables   = np.transpose([mu_var, alpha_var, beta_var])
@@ -88,7 +88,7 @@ def var_eval(lattice, ax, variables):
 
     var_dir     = "variances/" + directory[1] + directory[2]
     if not os.path.exists(var_dir):
-        os.mkdir(var_dir)
+        os.makedirs(var_dir)
     
     ax.scatter(mu, var_upp_n, marker='.', label='upper layer' )
     ax.scatter(mu, var_down_n, marker='.', label='lower layer')
