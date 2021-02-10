@@ -7,18 +7,17 @@ from joblib import Parallel, delayed
 def main():
     N       = 100
     n       = 10000
-    geom    = "quad"
     geom    = "hex"
+    geom    = "quad"
     cond    = 2
-    mu      = 1.40
-    alpha   = 1.0100
+    mu      = 0.800
+    alpha   = 1.015
     beta    = alpha
 	
-
-    lattice = grid(mu, N, N, alpha, beta, geom, cond) 
-
     run     = False
     run     = True
+
+    lattice = grid(mu, N, N, alpha, beta, geom, cond) 
 
     if run:
         lattice.greet()
@@ -29,25 +28,19 @@ def main():
             lattice.run(n)
             lattice.save()
 
-        lattice.plot(save_plot=True)
+        lattice.plot(save_plot=False)
     else:
+        lattice.load()
         lattice.fill_random()
-        lattice.animation(500, show_ani=True, save_ani=False)
+        lattice.animation(500, k=100, show_ani=True, save_ani=False)
 
-#    lattice.fill_random()
-#    lattice.run(n)
-#    lattice.save()
-#    print('Average moisture in the upper layer', np.mean(lattice.upp) )
-#    print('Average moisture in the lower layer', np.mean(lattice.down) )
-#    lattice.plot(save_plot=True)
-
-#    mus     = np.arange(.5, 2.0001, 0.1)
-#    alphas  = np.arange(1.02, 1.100, 0.01)
-##    X       = mus
-##    Y       = 1.2*np.ones(mus.size)
-#    X, Y    = np.meshgrid(mus, alphas)
+#    mus     = np.arange(.5, 2.3001, 0.01)
+#    alphas  = np.arange(1.00, 1.080, 0.01)
+#    X       = mus
+#    Y       = 1.02*np.ones(mus.size)
+##    X, Y    = np.meshgrid(mus, alphas)
 #    parameters  = np.stack((X.flatten(), Y.flatten() ), axis=-1 )
-#    num_cores   = multiprocessing.cpu_count() -1
+#    num_cores   = multiprocessing.cpu_count()
 #    Parallel(n_jobs=num_cores)(delayed(simulation)(params, n, N, geom, cond) for params in parameters) 
 ##    lattice.periodicity(n, 1000)
 

@@ -127,7 +127,7 @@ class grid:
         plt.show()
 
     ##### Routine to build an animation out of the simulation of a grid
-    def animation(self, n, show_ani=True, save_ani=False):
+    def animation(self, n, k=1, show_ani=True, save_ani=False):
         fig, (ax1,ax2)     = plt.subplots(1, 2, figsize=[12.8, 9.6])
         x       = list(range(self.l+1 ) )
         y       = x
@@ -140,7 +140,7 @@ class grid:
 
 
         def animate(i):
-            self.time_step_ind()
+            self.run(k)
 
             mesh1.set_array(self.upp.flatten() )
             mesh2.set_array(self.down.flatten() )
