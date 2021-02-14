@@ -54,16 +54,17 @@ class grid:
     ##### Load an already calculated lattice with its lattest occupation and variancies
     def load(self):
         directory   = "".join(self.data_directory() )
+        index       = 1
 
         if not os.path.exists(directory):
             print("There is no data available for this lattice configuration.")
             return False
         else:
-            name        = "occupation_down_1.npy"
+            name        = "occupation_down_{:1.0f}.npy".format(index)
             self.down   = np.load(directory + name)
-            name        = "occupation_upp_1.npy"
+            name        = "occupation_upp_{:1.0f}.npy".format(index)
             self.upp    = np.load(directory + name)
-            name        = "variance_1.npy"
+            name        = "variance_{:1.0f}.npy".format(index)
             self.var    = list(np.load(directory + name) )
             self.time   = len(self.var )
             return True
@@ -84,6 +85,11 @@ class grid:
         np.save(directory + name, self.upp)
         name        = "variance_{:1.0f}.npy".format(number)
         np.save(directory + name, self.var)
+
+        if self.period != -1:
+            name    = "periodicity_{:1.0f}.npy".format(number)
+            np.save(directory + name, self.period)
+
 
     ##### Plot the lattice and its variancies
     def plot(self, save_plot=False):
@@ -191,6 +197,26 @@ class grid:
                 print('Simulation stopped because of convergence after {} steps'.format(self.time) )
                 return
 
+    def latt_var_period(self, n, k):
+        self.greet()
+        exists  = self.load()
+        if not exists:
+            self.fill_random()
+        self.run(n)
+
+        self.save()
+
+        initial_pattern = self.topple()
+        for h in range(1, k+1):
+            self.time_step_ind()
+            candidate  = self.topple()
+            if np.array_equal(initial_pattern, candidate):
+                self.period     = h
+                break
+            if h == k:
+                self.period     = False
+
+
     def periodicity(self, n, k):
         result  = []
         for i in range(10):
@@ -275,6 +301,7 @@ class grid:
         self.var    = []                            #variance of the grid
         self.alpha  = alpha                         #toppling excession in horizontal direction
         self.beta   = beta                          #toppling excession in vertical direction
+        self.period = -1
 
         if geom in ["quad", "hex"]:
             self.geom   = geom                          #Geometry of the lattice

@@ -17,13 +17,15 @@ def main():
     fig, ax1    = plt.subplots()
     ax2         = ax1.twinx()
 
-    mu_var      = np.arange(0.5, 1.0, 0.01)
-    alpha_var   = alpha*np.ones(mu_var.size )
-    beta_var    = beta*np.ones(mu_var.size )
-    variables   = np.transpose([mu_var, alpha_var, beta_var])
+    mus         = np.arange(0.6, 0.901, 0.05)
+    alphas      = np.arange(1.00, 1.0301, 0.001)
+#    X       = mus
+#    Y       = 1.02*np.ones(mus.size)
+    X, Y        = np.meshgrid(mus, alphas)
+    #variables   = np.stack((X.flatten(), Y.flatten() ), axis=-1 )
 
     #period_eval(lattice, ax1, ax2)
-    var_eval(lattice, ax1, variables)
+    phase_eval(lattice, ax1, X, Y)
     plt.show()
 
 
@@ -56,6 +58,31 @@ def period_eval(lattice, ax1, ax2):
 
 def var_in(word):
     return 'var' in word
+
+def phase_eval(lattice, ax, X, Y):
+    directory   = lattice.data_directory()
+    latt_dir    = directory[0] + directory[1] + directory[2]
+    var         = []
+    variables   = np.stack((X, Y ), axis=2 )
+    print(X.shape)
+    Z           = np.zeros(X.shape)
+
+    for idx in np.ndindex(X.shape ):
+
+        set_of_var      = variables[idx]
+        lattice.mu      = set_of_var[0]
+        lattice.alpha   = set_of_var[1]
+        lattice.beta    = lattice.alpha
+        exists          = lattice.load()
+        print(lattice.time)
+        if exists:
+            Z[idx]      = np.sqrt(lattice.var[-1][1] )/lattice.mu
+
+    print(Z)
+    c   = plt.contourf(X, Y, Z)
+    plt.colorbar(c, ax=ax)
+    #print(var)
+
 
 def var_eval(lattice, ax, variables):
     directory   = lattice.data_directory()
