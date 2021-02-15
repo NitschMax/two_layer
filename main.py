@@ -44,8 +44,8 @@ def main():
 #        lattice.load()
 #        lattice.animation(1000, k=k, show_ani=True, save_ani=False)
 
-    mus     = np.arange(0.60, 0.9001, 0.05)
-    alphas  = np.arange(1.00, 1.0301, 0.001)
+    mus     = np.arange(0.60, 1.0001, 0.01)
+    alphas  = np.arange(1.00, 1.0301, 0.0001)
 #    X       = mus
 #    Y       = 1.02*np.ones(mus.size)
     X, Y    = np.meshgrid(mus, alphas)

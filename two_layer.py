@@ -49,7 +49,7 @@ class grid:
         return ['lattice_data/', 'condition_' + str(self.cond) + '/', self.geom + '_Nk1-{}_Nk2-{}/'.format(self.h,self.l), self.data_clarification() ]
 
     def data_clarification(self):
-        return 'mu-{:0.4f}_alpha-{:1.3f}_beta-{:1.3f}/'.format(self.mu,self.alpha,self.beta )
+        return 'mu-{:0.4f}_alpha-{:1.4f}_beta-{:1.4f}/'.format(self.mu,self.alpha,self.beta )
 
     ##### Load an already calculated lattice with its lattest occupation and variancies
     def load(self):
@@ -199,9 +199,8 @@ class grid:
 
     def latt_var_period(self, n, k):
         self.greet()
-        exists  = self.load()
-        if not exists:
-            self.fill_random()
+        
+        self.fill_random()
         self.run(n)
 
         self.save()
