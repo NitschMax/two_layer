@@ -203,7 +203,6 @@ class grid:
         self.fill_random()
         self.run(n)
 
-        self.save()
 
         initial_pattern = self.topple()
         for h in range(1, k+1):
@@ -215,6 +214,7 @@ class grid:
             if h == k:
                 self.period     = False
 
+        self.save()
 
     def periodicity(self, n, k):
         result  = []
