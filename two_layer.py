@@ -10,7 +10,7 @@ class grid:
     ##### Let the lattice introduce itself
     def greet(self):
         print("Hello World, I am a grid of heigth {} and length {}! My average filling is {:1.4f} and I have a {} geometry. Alpha is {:1.3f} and beta {:1.3f}." \
-                .format(self.h, self.l, self.mu, self.geom, self.alpha, self.beta) )
+                .format(self.h, self.l, self.mu, self.geom, self.alpha, self.beta), 'My updates are ' + self.sync + 'chronized.' )
 
     ##### Several interesting starting configurations
     def fill_random(self):
@@ -52,9 +52,9 @@ class grid:
         return 'mu-{:0.4f}_alpha-{:1.4f}_beta-{:1.4f}/'.format(self.mu,self.alpha,self.beta )
 
     ##### Load an already calculated lattice with its lattest occupation and variancies
-    def load(self):
+    def load(self, k=1):
         directory   = "".join(self.data_directory() )
-        index       = 1
+        index       = k
 
         if not os.path.exists(directory):
             print("There is no data available for this lattice configuration.")
@@ -178,20 +178,22 @@ class grid:
     def test_run(self):
         middle      = int(self.l/2)
         self.down      = np.zeros((self.h, self.l) )
+        self.upp    = np.ones((self.h, self.l) )/2
 
-        self.modify(self.l-1, self.l-1, 2)
+        self.modify(0, self.l-1, 2)
         self.modify(0, 0, 2)
         self.modify(middle, middle, 2)
         self.modify(middle-1, middle-1, 2)
 
         self.plot()
-        self.time_step_ind()
+        self.time_step()
         self.plot()
 
     ##### A running routine, if the time_step algorithm returns 0, then the lattice has no possible spillings any more
     def run(self, N):
         for k in range(N):
-            wert    = self.time_step_ind()
+            wert    = self.time_step()
+
 
             if wert == 0:
                 print('Simulation stopped because of convergence after {} steps'.format(self.time) )
@@ -252,6 +254,16 @@ class grid:
         return candidates
 
     ##### Last version of the time_step algorithm, purely array indexing, by way the fastest version
+    def time_step(self):
+        if self.sync == 'sync':
+            wert    = self.time_step_ind()
+        elif self.sync == 'asyn':
+            wert    = self.time_step_asyn()
+        else:
+            print('nonvalid synchronisation choosen')
+
+        return wert
+
     def time_step_ind(self):
         candidates  = self.topple()
         if candidates.size == 0:
@@ -291,7 +303,51 @@ class grid:
         self.time   += 1
         return 1
 
-    def __init__(self, mu, heigth, length, alpha, beta, geom="quad", cond=0):
+    def time_step_asyn(self):
+        candidate   = [np.random.randint(0, self.l ), np.random.randint(0, self.h) ]
+        filling     = self.down[candidate[0], candidate[1]]
+        if filling <= 1:
+            return 1
+
+        #candidates  = np.transpose(self.topple() )
+        #if candidates.size == 0:
+        #    return 0                                                    # Break the routine of there is no spilling possible
+        #candidate   = candidates[np.random.randint(0, len(candidates) ) ]
+
+
+        self.down[candidate[0], candidate[1]]  = 0
+        if self.geom == 'quad':
+            steps       = np.array([[-1, 0], [1, 0], [0, -1], [0, 1] ] )
+        elif self.geom == 'hex':
+            steps       = np.array([[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, 1] ] )
+			
+        candidate   = np.transpose(candidate)
+        neighboors  = np.mod(candidate + steps, self.l)
+        neighboors  = np.transpose(neighboors )
+        num_neigh   = len(steps)+1
+        self.down[neighboors[0], neighboors[1]]     += self.alpha*filling/num_neigh             # This is necessary to get overspillings in the same cell right
+        self.upp[candidate[0], candidate[1]]        += self.beta*filling/num_neigh
+
+        total_one   = self.a*self.mu
+
+        total_upp   = np.sum(self.upp)
+        exc_upp     = total_upp-total_one
+        percentage  = exc_upp/total_upp
+        self.down   += percentage*self.upp
+        self.upp    -= percentage*self.upp
+
+        total_down  = np.sum(self.down)
+        total_exc   = total_down-total_one
+        percentage  = total_exc/total_down
+        self.down   -= percentage*self.down
+
+        self.var.append([np.var(self.down), np.var(self.upp) ] )
+        self.time   += 1
+
+        return 1
+
+
+    def __init__(self, mu, heigth, length, alpha, beta, geom="quad", cond=0, sync='sync'):
         self.h      = heigth                        #heigth of the grid
         self.l      = length                        #length of the grid
         self.a      = self.h*self.l                 #area of the grid
@@ -313,6 +369,12 @@ class grid:
         else:
             print('Choosen condition does not exist. Plus condition is choosen as default')
             self.cond   = 0
+
+        if sync in ['sync', 'asyn']:
+            self.sync   = sync
+        else:
+            print('Choosen update synchronisation does not exist. Synchron updates are choosen as default')
+            self.sync   = 'sync'
 					
         self.upp    = np.zeros((self.h, self.l) )   #occupations, to get non-zero ocupations use the fill_* fuctions
         self.down   = np.zeros((self.h, self.l) )   #occupations, to get non-zero ocupations use the fill_* fuctions

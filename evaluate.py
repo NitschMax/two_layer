@@ -15,15 +15,16 @@ def main():
 
     lattice     = grid(mu, N, N, alpha, beta, geom, cond)
     fig, ax1    = plt.subplots()
-    ax2         = ax1.twinx()
 
-    mus         = np.arange(0.6, 0.901, 0.05)
-    alphas      = np.arange(1.00, 1.0301, 0.001)
+    mus         = np.arange(0.6, 1.001, 0.01)
+    alphas      = np.arange(1.00, 1.0301, 0.0001)
+    print(mus.size, alphas.size)
 #    X       = mus
 #    Y       = 1.02*np.ones(mus.size)
     X, Y        = np.meshgrid(mus, alphas)
     #variables   = np.stack((X.flatten(), Y.flatten() ), axis=-1 )
 
+    #ax2         = ax1.twinx()
     #period_eval(lattice, ax1, ax2)
     phase_eval(lattice, ax1, X, Y)
     plt.show()
@@ -64,24 +65,38 @@ def phase_eval(lattice, ax, X, Y):
     latt_dir    = directory[0] + directory[1] + directory[2]
     var         = []
     variables   = np.stack((X, Y ), axis=2 )
-    print(X.shape)
     Z           = np.zeros(X.shape)
 
-    for idx in np.ndindex(X.shape ):
+    directory       = lattice.data_directory()
+    name            = directory[-2][:-1]
+    directory[-2]   = 'phase_space_plots/'
+    directory       = np.delete(directory, -1)
+    directory       = ''.join(directory )
+    data_ex     = os.path.exists(directory + name + '.npy')
 
-        set_of_var      = variables[idx]
-        lattice.mu      = set_of_var[0]
-        lattice.alpha   = set_of_var[1]
-        lattice.beta    = lattice.alpha
-        exists          = lattice.load()
-        print(lattice.time)
-        if exists:
-            Z[idx]      = np.sqrt(lattice.var[-1][1] )/lattice.mu
+    if data_ex:
+        X, Y, Z = np.load(directory + name + '.npy')
+    else:
+        for idx in np.ndindex(X.shape ):
 
-    print(Z)
-    c   = plt.contourf(X, Y, Z)
-    plt.colorbar(c, ax=ax)
-    #print(var)
+            set_of_var      = variables[idx]
+            lattice.mu      = set_of_var[0]
+            lattice.alpha   = set_of_var[1]
+            lattice.beta    = lattice.alpha
+            exists          = lattice.load()
+            if exists:
+                Z[idx]      = np.sqrt(lattice.var[-1][1] )/lattice.mu
+
+    c   = ax.pcolormesh(X, Y, Z, shading='auto')
+    clb = plt.colorbar(c, ax=ax)
+    clb.ax.set_title('normed standard deviation')
+    
+    ax.set_xlabel('Average filling mu')
+    ax.set_ylabel('Aggregation strength alpha')
+    ax.grid(True)
+
+    plt.savefig(directory + name + '.pdf')
+    np.save(directory + name, [X, Y, Z] )
 
 
 def var_eval(lattice, ax, variables):
