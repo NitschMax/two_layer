@@ -7,12 +7,12 @@ from joblib import Parallel, delayed
 import time
 
 def main():
-    N           = 100
-    n           = 1000000
+    N           = 50
+    n           = 10000
     max_period  = 1000
 
-    geom    = "hex"
     geom    = "quad"
+    geom    = "hex"
     cond    = 2
     mu      = 0.7000
     alpha   = 1.0020
@@ -32,44 +32,44 @@ def main():
 #    lattice.plot()
 
 
-    run     = False
-    run     = True
-
-    add_run = True
-    add_run = False
-
-    if run:
-        lattice.greet()
-        exists  = lattice.load()
-        if not exists:
-            print('Run simulation')
-            lattice.fill_random()
-            lattice.run(n)
-            #lattice.save()
-
-        if add_run:
-            lattice.run(n)
-
-        lattice.plot(save_plot=True)
-    else:
-        lattice.load()
-        lattice.animation(1000, k=k, show_ani=True, save_ani=False)
-
-#    mus     = np.arange(0.60, 1.0001, 0.01)
-#    alphas  = np.arange(1.00, 1.0301, 0.0001)
+#    run     = False
+#    run     = True
 #
+#    add_run = True
+#    add_run = False
+#
+#    if run:
+#        lattice.greet()
+#        exists  = lattice.load()
+#        if not exists:
+#            print('Run simulation')
+#            lattice.fill_random()
+#            lattice.run(n)
+#            #lattice.save()
+#
+#        if add_run:
+#            lattice.run(n)
+#
+#        lattice.plot(save_plot=True)
+#    else:
+#        lattice.load()
+#        lattice.animation(1000, k=k, show_ani=True, save_ani=False)
+
+    mus     = np.arange(0.60, 1.0001, 0.01)
+    alphas  = np.arange(1.00, 1.0301, 0.0001)
+
 #    mus     = np.arange(0.60, 1.0001, 0.05)
 #    alphas  = np.arange(1.00, 1.0301, 0.001)
-#
-##    X       = mus
-##    Y       = 1.02*np.ones(mus.size)
-#    X, Y    = np.meshgrid(mus, alphas)
-#    parameters  = np.stack((X.flatten(), Y.flatten() ), axis=-1 )
-#    num_cores   = multiprocessing.cpu_count()
-#    tic = time.perf_counter()
-#    Parallel(n_jobs=num_cores)(delayed(simulation)(params, n, N, max_period, geom, cond) for params in parameters) 
-#    print(time.perf_counter() - tic )
-##    lattice.periodicity(n, 1000)
+
+#    X       = mus
+#    Y       = 1.02*np.ones(mus.size)
+    X, Y    = np.meshgrid(mus, alphas)
+    parameters  = np.stack((X.flatten(), Y.flatten() ), axis=-1 )
+    num_cores   = int(multiprocessing.cpu_count()/2)
+    tic = time.perf_counter()
+    Parallel(n_jobs=num_cores)(delayed(simulation)(params, n, N, max_period, geom, cond) for params in parameters) 
+    print(time.perf_counter() - tic )
+#    lattice.periodicity(n, 1000)
 
 #    for mu in np.arange(0.25, 0.7501, .01):
 #        lattice = grid(mu, N, N, geom, cond)
