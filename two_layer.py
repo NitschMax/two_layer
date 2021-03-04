@@ -6,8 +6,60 @@ import scipy.sparse as sparse
 import data_dir
 from matplotlib.animation import FuncAnimation
 
+from numba import njit, int32, float32, types    # import the types
+from numba.experimental import jitclass
+
+spec = [
+    ('h', int32),
+    ('l', int32),
+    ('a', int32),
+    ('time', int32),
+    ('period', int32),
+    ('cond', int32),
+    ('mu', float32),
+    ('alpha', float32),
+    ('beta', float32),
+    ('var', float32[:,:]),
+    ('upp', float32[:,:]),
+    ('down', float32[:,:]),
+    ('geom', types.unicode_type),
+    ('sync', types.unicode_type),
+]
+
 class grid:
-    ##### Let the lattice introduce itself
+    def __init__(self, mu, heigth, length, alpha, beta, geom="quad", cond=0, sync='sync'):
+        self.h      = heigth                        #heigth of the grid
+        self.l      = length                        #length of the grid
+        self.a      = self.h*self.l                 #area of the grid
+        self.mu     = mu                            #average filling of the grid
+        self.time   = 0                             #current time step of the grid
+        self.var    = np.array([[0., 0.]])                            #variance of the grid
+        self.alpha  = alpha                         #toppling excession in horizontal direction
+        self.beta   = beta                          #toppling excession in vertical direction
+        self.period = -1
+
+        if geom in ["quad", "hex"]:
+            self.geom   = geom                          #Geometry of the lattice
+        else:
+            print('Choosen geometry does not exist. Quadratic geometric choosen as default')
+            self.geom   = "quad"
+
+        if cond in [0, 1, 2]:
+    	    self.cond   = cond
+        else:
+            print('Choosen condition does not exist. Plus condition is choosen as default')
+            self.cond   = 0
+
+        if sync in ['sync', 'asyn']:
+            self.sync   = sync
+        else:
+            print('Choosen update synchronisation does not exist. Synchron updates are choosen as default')
+            self.sync   = 'sync'
+					
+        self.upp    = np.zeros((self.h, self.l) )   #occupations, to get non-zero ocupations use the fill_* fuctions
+        self.down   = np.zeros((self.h, self.l) )   #occupations, to get non-zero ocupations use the fill_* fuctions
+
+   ##### Let the lattice introduce itself
     def greet(self):
         print("Hello World, I am a grid of heigth {} and length {}! My average filling is {:1.4f} and I have a {} geometry. Alpha is {:1.3f} and beta {:1.3f}." \
                 .format(self.h, self.l, self.mu, self.geom, self.alpha, self.beta), 'My updates are ' + self.sync + 'chronized.' )
@@ -19,7 +71,7 @@ class grid:
         self.upp       = np.random.rand(self.h, self.l)
         self.upp       *= self.mu/self.upp.mean()
         self.time   = 0
-        self.var    = [[np.var(self.down), np.var(self.upp)] ]
+        self.var    = np.array([[np.var(self.down), np.var(self.upp)] ] )
 
     def fill_checkerboard(self):
         self.down      = np.indices((self.h, self.l) ).sum(axis=0) % 2 
@@ -65,7 +117,7 @@ class grid:
             name        = "occupation_upp_{:1.0f}.npy".format(index)
             self.upp    = np.load(directory + name)
             name        = "variance_{:1.0f}.npy".format(index)
-            self.var    = list(np.load(directory + name) )
+            self.var    = np.load(directory + name)
             self.time   = len(self.var )
             return True
 
@@ -96,28 +148,45 @@ class grid:
         fig, ((ax1,ax2,ax3),(ax4,ax5,ax6))  = plt.subplots(2,3)
         c1                  = ax1.pcolor(self.upp, cmap='RdBu')
         c2                  = ax4.pcolor(self.down, cmap='RdBu', vmax=2.5*self.mu)
-        normed_var          = np.array(self.var)/self.mu**2
-        ax2.set_title('upper layer')
-        ax2.set_xlabel('timestep')
-        ax2.set_ylabel('standard deviation')
+        normed_var          = np.sqrt(self.var)/self.mu
 
-        ax5.set_title('lower layer')
-        ax5.set_xlabel('timestep')
-        ax5.set_ylabel('standard deviation')
+        axis_font   = {'size':'12'}
+        axis        = [ax1, ax2, ax3, ax4, ax5, ax6]
 
-        ax3.set_xlabel('moisture')
-        ax3.set_ylabel('number of cells')
+        ticksize    = 10
+        for ax in axis:
+            ax.tick_params(labelsize=ticksize)
+            ax.tick_params(labelsize=ticksize)
 
-        ax6.set_xlabel('moisture')
-        ax6.set_ylabel('number of cells')
+        ax2.set_xlabel('timestep t', **axis_font)
+        ax2.set_ylabel(r'standard deviation $\sigma$', **axis_font)
+        ax2.grid(True)
+
+        ax5.set_xlabel('timestep t', **axis_font)
+        ax5.set_ylabel(r'standard deviation $\sigma$', **axis_font)
+        ax5.grid(True)
+
+        ax3.set_xlabel(r'moisture $\mu$', **axis_font)
+        ax3.set_ylabel('number of cells', **axis_font)
+        ax3.grid(True)
+
+        ax6.set_xlabel(r'moisture $\mu$', **axis_font)
+        ax6.set_ylabel('number of cells', **axis_font)
+        ax6.grid(True)
 
         ax2.plot(normed_var[:,1], )
         ax5.plot(normed_var[:,0], )
         ax3.hist(self.upp.flatten(), bins=20)
         ax6.hist(self.down.flatten(), bins=20)
-        fig.colorbar(c1, ax=ax1)
-        fig.colorbar(c2, ax=ax4)
-        fig.tight_layout()
+
+        cbar1   = fig.colorbar(c1, ax=ax1)
+        cbar1.ax.set_title(r'moisture $\mu$', **axis_font)
+        cbar1.ax.tick_params(labelsize=ticksize)
+
+        cbar2   = fig.colorbar(c2, ax=ax4)
+        cbar2.ax.set_title(r'moisture $\mu$', **axis_font)
+        cbar2.ax.tick_params(labelsize=ticksize)
+        fig.tight_layout(pad=0.3)
 
         if save_plot:
             sub_dirs        = self.data_directory()
@@ -139,8 +208,6 @@ class grid:
         y       = x
         mesh1   = ax1.pcolormesh(x, y, self.upp, cmap='RdBu', vmin=0)
         mesh2   = ax2.pcolormesh(x, y, self.down, cmap='RdBu', vmin=0)
-        ax1.set_title('upper layer')
-        ax2.set_title('lower layer')
         fig.colorbar(mesh1, ax=ax1)
         fig.colorbar(mesh2, ax=ax2)
 
@@ -191,13 +258,17 @@ class grid:
 
     ##### A running routine, if the time_step algorithm returns 0, then the lattice has no possible spillings any more
     def run(self, N):
-        for k in range(N):
-            wert    = self.time_step()
+        if self.sync == 'asyn':
+            self.run_asyn(N)
+        elif self.sync == 'sync':
+            for k in range(N):
+                wert    = self.time_step_ind()
 
-
-            if wert == 0:
-                print('Simulation stopped because of convergence after {} steps'.format(self.time) )
-                return
+                if wert == 0:
+                    print('Simulation stopped because of convergence after {} steps'.format(self.time) )
+                    return
+        else:
+            print('nonvalid synchronisation choosen')
 
     def latt_var_period(self, n, k):
         self.greet()
@@ -226,7 +297,7 @@ class grid:
             self.run(n)
             initial_pattern = self.topple()
             for h in range(1, k+1):
-                self.time_step_ind()
+                self.time_step()
                 candidates  = self.topple()
                 if np.array_equal(initial_pattern, candidates):
                     result.append([self.mu, h] )
@@ -299,85 +370,64 @@ class grid:
         percentage  = total_exc/total_down
         self.down   -= percentage*self.down
 
-        self.var.append([np.var(self.down), np.var(self.upp) ] )
+        self.var    = np.concatenate((self.var, np.array([[np.var(self.down), np.var(self.upp) ]]) ), axis=0 )
         self.time   += 1
         return 1
+
+    def run_asyn(self, N):
+        self.down, self.upp, self.var, self.time    = _run_asyn(N, self.down, self.upp, self.l, self.h, self.a, self.mu, self.geom, self.var, self.time, self.alpha, self.beta )
 
     def time_step_asyn(self):
-        candidate   = [np.random.randint(0, self.l ), np.random.randint(0, self.h) ]
-        filling     = self.down[candidate[0], candidate[1]]
-        if filling <= 1:
-            return 1
-
-        #candidates  = np.transpose(self.topple() )
-        #if candidates.size == 0:
-        #    return 0                                                    # Break the routine of there is no spilling possible
-        #candidate   = candidates[np.random.randint(0, len(candidates) ) ]
-
-
-        self.down[candidate[0], candidate[1]]  = 0
-        if self.geom == 'quad':
-            steps       = np.array([[-1, 0], [1, 0], [0, -1], [0, 1] ] )
-        elif self.geom == 'hex':
-            steps       = np.array([[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, 1] ] )
-			
-        candidate   = np.transpose(candidate)
-        neighboors  = np.mod(candidate + steps, self.l)
-        neighboors  = np.transpose(neighboors )
-        num_neigh   = len(steps)+1
-        self.down[neighboors[0], neighboors[1]]     += self.alpha*filling/num_neigh             # This is necessary to get overspillings in the same cell right
-        self.upp[candidate[0], candidate[1]]        += self.beta*filling/num_neigh
-
-        total_one   = self.a*self.mu
-
-        total_upp   = np.sum(self.upp)
-        exc_upp     = total_upp-total_one
-        percentage  = exc_upp/total_upp
-        self.down   += percentage*self.upp
-        self.upp    -= percentage*self.upp
-
-        total_down  = np.sum(self.down)
-        total_exc   = total_down-total_one
-        percentage  = total_exc/total_down
-        self.down   -= percentage*self.down
-
-        self.var.append([np.var(self.down), np.var(self.upp) ] )
-        self.time   += 1
-
+        self.down, self.upp, self.var, self.time    = _time_step_asyn(self.down, self.upp, self.l, self.h, self.a, self.mu, self.geom, self.var, self.time, self.alpha, self.beta )
         return 1
 
+@njit
+def _run_asyn(N, down, upp, l, h, a, mu, geom, var, time, alpha, beta):
+    for k in range(N):
+        down, upp, var, time    = _time_step_asyn(down, upp, l, h, a, mu, geom, var, time, alpha, beta )
 
-    def __init__(self, mu, heigth, length, alpha, beta, geom="quad", cond=0, sync='sync'):
-        self.h      = heigth                        #heigth of the grid
-        self.l      = length                        #length of the grid
-        self.a      = self.h*self.l                 #area of the grid
-        self.mu     = mu                            #average filling of the grid
-        self.time   = 0                             #current time step of the grid
-        self.var    = []                            #variance of the grid
-        self.alpha  = alpha                         #toppling excession in horizontal direction
-        self.beta   = beta                          #toppling excession in vertical direction
-        self.period = -1
+    return down, upp, var, time
 
-        if geom in ["quad", "hex"]:
-            self.geom   = geom                          #Geometry of the lattice
-        else:
-            print('Choosen geometry does not exist. Quadratic geometric choosen as default')
-            self.geom   = "quad"
+@njit
+def _time_step_asyn(down, upp, l, h, a, mu, geom, var, time, alpha, beta):
+    candidate   = [np.random.randint(0, l ), np.random.randint(0, h) ]
+    filling     = down[candidate[0], candidate[1]]
+    if filling <= 1:
+        time        += 1
+        var         = np.concatenate((var, np.array([[np.var(down), np.var(upp) ] ])), axis=0 )
+        return down, upp, var, time
 
-        if cond in [0, 1, 2]:
-    	    self.cond   = cond
-        else:
-            print('Choosen condition does not exist. Plus condition is choosen as default')
-            self.cond   = 0
+    down[candidate[0], candidate[1]]  = 0
+    if geom == 'quad':
+        steps       = np.array([[-1, 0], [1, 0], [0, -1], [0, 1] ] )
+    elif geom == 'hex':
+        steps       = np.array([[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, 1] ] )
+    		
+    num_neigh   = len(steps)+1
+    upp[candidate[0], candidate[1]]        += beta*filling/num_neigh
 
-        if sync in ['sync', 'asyn']:
-            self.sync   = sync
-        else:
-            print('Choosen update synchronisation does not exist. Synchron updates are choosen as default')
-            self.sync   = 'sync'
-					
-        self.upp    = np.zeros((self.h, self.l) )   #occupations, to get non-zero ocupations use the fill_* fuctions
-        self.down   = np.zeros((self.h, self.l) )   #occupations, to get non-zero ocupations use the fill_* fuctions
+    candidate   = np.array([candidate ] )
+    neighbors   = np.mod(candidate + steps, l)
+    for neighbor in neighbors:
+        down[neighbor[0], neighbor[1]]     += alpha*filling/num_neigh             # This is necessary to get overspillings in the same cell right
+
+    total_one   = a*mu
+
+    total_upp   = np.sum(upp)
+    exc_upp     = total_upp-total_one
+    percentage  = exc_upp/total_upp
+    down   += percentage*upp
+    upp    -= percentage*upp
+
+    total_down  = np.sum(down)
+    total_exc   = total_down-total_one
+    percentage  = total_exc/total_down
+    down        -= percentage*down
+
+    var         = np.concatenate((var, np.array([[np.var(down), np.var(upp) ] ])), axis=0 )
+    time   += 1
+
+    return down, upp, var, time
 
     
 def var_in(word):

@@ -7,28 +7,29 @@ from joblib import Parallel, delayed
 import time
 
 def main():
-    N           = 50
-    n           = 1000
+    N           = 100
+    n           = 1000000
     max_period  = 1000
 
     geom    = "hex"
     geom    = "quad"
     cond    = 2
     mu      = 0.7000
-    alpha   = 1.0300
+    alpha   = 1.0020
     beta    = alpha
     k       = 1
 
     update  = 'asyn'
     update  = 'sync'
 	
-#    lattice = grid(mu, N, N, alpha, beta, geom, cond, update) 
+    lattice = grid(mu, N, N, alpha, beta, geom, cond, update) 
+
 #    lattice.fill_random()
 #    tic     = time.perf_counter()
-#    lattice.run(n*n)
+#    lattice.run(n)
 #    #lattice.animation(n, n)
-#    lattice.plot()
 #    print(time.perf_counter() - tic )
+#    lattice.plot()
 
 
     run     = False
@@ -37,7 +38,6 @@ def main():
     add_run = True
     add_run = False
 
-
     if run:
         lattice.greet()
         exists  = lattice.load()
@@ -45,12 +45,12 @@ def main():
             print('Run simulation')
             lattice.fill_random()
             lattice.run(n)
-            lattice.save()
+            #lattice.save()
 
         if add_run:
-            lattice.run(4*n)
+            lattice.run(n)
 
-        lattice.plot(save_plot=False)
+        lattice.plot(save_plot=True)
     else:
         lattice.load()
         lattice.animation(1000, k=k, show_ani=True, save_ani=False)
