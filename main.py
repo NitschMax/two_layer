@@ -11,8 +11,8 @@ def main():
     n           = 10000
     max_period  = 1000
 
-    geom    = "quad"
     geom    = "hex"
+    geom    = "quad"
     cond    = 2
     mu      = 0.7000
     alpha   = 1.0020
@@ -22,6 +22,7 @@ def main():
     update  = 'asyn'
     update  = 'sync'
 	
+    time.sleep(3*60*60)
     lattice = grid(mu, N, N, alpha, beta, geom, cond, update) 
 
 #    lattice.fill_random()
